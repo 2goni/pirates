@@ -9,6 +9,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
+//점포 테이블
 @Getter
 @NoArgsConstructor
 @Entity

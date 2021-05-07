@@ -8,6 +8,7 @@ import org.hibernate.annotations.OnDeleteAction;
 
 import javax.persistence.*;
 
+//영업시간 테이블
 @Getter
 @NoArgsConstructor
 @Entity

@@ -22,8 +22,8 @@ public class ApiService {
     private final BusinessTimesRepository businessTimesRepository;
     private final HolidaysRepository holidaysRepository;
 
-    public void addStore(StoreInfoDTO storeInfoDto){
-
+    //점포 추가 메소드
+    public void addStore(StoreInfoDTO storeInfoDto) {
         StoreInfo storeInfo = StoreInfo.builder()
                 .name(storeInfoDto.getName())
                 .owner(storeInfoDto.getOwner())
@@ -33,9 +33,11 @@ public class ApiService {
                 .phone(storeInfoDto.getPhone())
                 .build();
 
+        //storeInfo 테이블에 저장
         storeInfoRepository.save(storeInfo);
 
-        for(BusinessTimesDTO businessTimesDto : storeInfoDto.getBusinessTimes()) {
+        for (BusinessTimesDTO businessTimesDto : storeInfoDto.getBusinessTimes()) {
+            //businessTimes 테이블에 저장
             businessTimesRepository.save(BusinessTimes.builder()
                     .day(businessTimesDto.getDay())
                     .open(businessTimesDto.getOpen())
@@ -45,14 +47,17 @@ public class ApiService {
         }
     }
 
-    public void addHolidays(HolidaysDTO holidaysDto){
+    //휴무일 등록 메소드
+    public void addHolidays(HolidaysDTO holidaysDto) {
         Optional<StoreInfo> takeStoreInfo = storeInfoRepository.findById(holidaysDto.getId());
-        if(takeStoreInfo.isPresent()){
+        if (takeStoreInfo.isPresent()) {
             StoreInfo storeInfo = takeStoreInfo.get();
-            for(Date date : holidaysDto.getHolidays())
-                if(holidaysRepository.findByStoreInfoAndHoliday(storeInfo,date).isPresent()){
+            for (Date date : holidaysDto.getHolidays())
+                //같은점포에서 같은날에 휴무 중복 등록시 등록 안됨
+                if (holidaysRepository.findByStoreInfoAndHoliday(storeInfo, date).isPresent()) {
                     break;
-                }else {
+                } else {
+                    //holidays 테이블에 저장
                     holidaysRepository.save(Holidays.builder()
                             .holiday(date)
                             .storeInfo(storeInfo)
@@ -61,23 +66,23 @@ public class ApiService {
         }
     }
 
-    public List<StoreListDTO> getStoreList(){
+    public List<StoreListDTO> getStoreList() {
         Date date = new Date();
         List<StoreListDTO> storeList = new ArrayList<>();
-        List<StoreInfo> storeInfoList = storeInfoRepository.findAll(Sort.by(Sort.Direction.ASC,"level"));
-        for(StoreInfo storeInfo: storeInfoList){
+        List<StoreInfo> storeInfoList = storeInfoRepository.findAll(Sort.by(Sort.Direction.ASC, "level"));
+        for (StoreInfo storeInfo : storeInfoList) {
             StoreListDTO storeListDto = StoreListDTO.builder()
                     .name(storeInfo.getName())
                     .description(storeInfo.getDescription())
                     .level(storeInfo.getLevel())
-                    .businessStatus(getBusinessStatus(storeInfo,date))
+                    .businessStatus(getBusinessStatus(storeInfo, date))
                     .build();
             storeList.add(storeListDto);
         }
         return storeList;
     }
 
-    public StoreDetailDTO storeDetail(Long id){
+    public StoreDetailDTO storeDetail(Long id) {
         Date date = new Date();
         Calendar calendar = Calendar.getInstance();
         int calDate = calendar.get(Calendar.DAY_OF_WEEK);
@@ -85,11 +90,11 @@ public class ApiService {
         StoreDetailDTO storeDetailDTO = null;
         Optional<StoreInfo> findStoreInfo = storeInfoRepository.findById(id);
         List<BusinessDetailDTO> businessDetailDTO = new ArrayList<>();
-        if(findStoreInfo.isPresent()){
+        if (findStoreInfo.isPresent()) {
             StoreInfo storeInfo = findStoreInfo.get();
-            for(int i=0; i<3; i++){
+            for (int i = 0; i < 3; i++) {
                 Optional<BusinessTimes> getBusinessTimes = businessTimesRepository.findByStoreInfoAndAndDay(storeInfo, getDay(calDate));
-                if(getBusinessTimes.isPresent()) {
+                if (getBusinessTimes.isPresent()) {
                     date = calendar.getTime();
                     businessDetailDTO.add(BusinessDetailDTO.builder()
                             .day(getBusinessTimes.get().getDay())
@@ -98,7 +103,7 @@ public class ApiService {
                             .status(getBusinessStatus(storeInfo, date))
                             .build());
                 }
-                calendar.add(Calendar.DATE,1);
+                calendar.add(Calendar.DATE, 1);
                 calDate++;
             }
             storeDetailDTO = StoreDetailDTO.builder()
@@ -114,47 +119,51 @@ public class ApiService {
         return storeDetailDTO;
     }
 
-    public void deleteStore(Long id){
+    public void deleteStore(Long id) {
         storeInfoRepository.deleteById(id);
     }
 
 
-    public boolean checkBusinessTime(StoreInfoDTO storeInfoDto){
-        for(BusinessTimesDTO businessTimesDto : storeInfoDto.getBusinessTimes()) {
-            if(businessTimesDto.getOpen().equals(businessTimesDto.getClose())){
+    public boolean checkBusinessTime(StoreInfoDTO storeInfoDto) {
+        for (BusinessTimesDTO businessTimesDto : storeInfoDto.getBusinessTimes()) {
+            if (businessTimesDto.getOpen().equals(businessTimesDto.getClose())) {
                 return true;
             }
         }
         return false;
     }
 
-    public String getBusinessStatus(StoreInfo storeInfo, Date date){
-        if(holidaysRepository.findByStoreInfoAndHoliday(storeInfo, date).isPresent()){
+    //영업 상태 반환 메소드
+    public String getBusinessStatus(StoreInfo storeInfo, Date date) {
+        //오늘 휴무일시 HOLIDAY 반환
+        if (holidaysRepository.findByStoreInfoAndHoliday(storeInfo, date).isPresent()) {
             return "HOLIDAY";
         }
+        //오픈시간 보다 늦었고 마감시감보다 이르면 OPEN 반환
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm");
         int calDate = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
-        Optional<BusinessTimes> businessTimes = businessTimesRepository.findByStoreInfoAndAndDay(storeInfo,getDay(calDate));
-        if(businessTimes.isPresent()){
+        Optional<BusinessTimes> businessTimes = businessTimesRepository.findByStoreInfoAndAndDay(storeInfo, getDay(calDate));
+        if (businessTimes.isPresent()) {
             int open = getMinute(businessTimes.get().getOpen());
             int close = getMinute(businessTimes.get().getClose());
             int now = getMinute(simpleDateFormat.format(date));
-            System.out.println(now);
-            System.out.println(open);
-            System.out.println(close);
-            if(open <= now && close >= now)
-                    return "OPEN";
-                }
+            if (open <= now && close >= now) {
+                return "OPEN";
+            }
+        }
+        //그외 CLOSE 반환
         return "CLOSE";
     }
 
-    public int getMinute(String date){
+    //시간 분으로 바꿔주는 메소드
+    public int getMinute(String date) {
         String[] time = date.split(":");
-        return (Integer.parseInt(time[0])*60) + (Integer.parseInt(time[1]));
+        return (Integer.parseInt(time[0]) * 60) + (Integer.parseInt(time[1]));
     }
 
-    public String getDay(int date){
-        switch (date){
+    //요일 반환 메소드
+    public String getDay(int date) {
+        switch (date) {
             case 1:
                 return "Sunday";
             case 2:
@@ -170,7 +179,7 @@ public class ApiService {
             case 7:
                 return "Saturday";
             default:
-                return getDay(date -7);
+                return getDay(date - 7);
         }
 
     }

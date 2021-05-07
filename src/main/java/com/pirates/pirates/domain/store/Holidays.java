@@ -9,6 +9,7 @@ import org.hibernate.annotations.OnDeleteAction;
 import javax.persistence.*;
 import java.util.Date;
 
+//점포 휴일 테이블
 @Getter
 @NoArgsConstructor
 @Entity
