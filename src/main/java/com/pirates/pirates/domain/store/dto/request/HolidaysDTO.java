@@ -1,4 +1,4 @@
-package com.pirates.pirates.domain.store.dto;
+package com.pirates.pirates.domain.store.dto.request;
 
 import lombok.Data;
 
@@ -6,7 +6,7 @@ import java.util.Date;
 import java.util.List;
 
 @Data
-public class HolidaysDto {
+public class HolidaysDTO {
 
     private Long id;
     private List<Date> holidays;

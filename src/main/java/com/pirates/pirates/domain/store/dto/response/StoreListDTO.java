@@ -1,11 +1,10 @@
-package com.pirates.pirates.domain.store.dto;
+package com.pirates.pirates.domain.store.dto.response;
 
 import lombok.Builder;
-import lombok.Data;
 import lombok.Getter;
 
 @Getter
-public class StoreListDto {
+public class StoreListDTO {
 
     private String name;
     private String description;
@@ -13,7 +12,7 @@ public class StoreListDto {
     private String businessStatus;
 
     @Builder
-    public StoreListDto(String name, String description, Integer level, String businessStatus){
+    public StoreListDTO(String name, String description, Integer level, String businessStatus){
         this.name = name;
         this.description = description;
         this.level = level;

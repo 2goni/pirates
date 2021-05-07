@@ -5,11 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 @Getter
 @NoArgsConstructor
@@ -24,7 +21,7 @@ public class BusinessTimes {
 
     private String open;
 
-    private String close;
+    private String  close;
 
     @ManyToOne
     @OnDelete(action = OnDeleteAction.CASCADE)
@@ -32,12 +29,11 @@ public class BusinessTimes {
     private StoreInfo storeInfo;
 
     @Builder
-    public BusinessTimes (String day, String open, String close, StoreInfo storeInfo){
+    public BusinessTimes(String day, String open, String close, StoreInfo storeInfo){
         this.day = day;
         this.open = open;
         this.close = close;
         this.storeInfo= storeInfo;
-
     }
 
 }

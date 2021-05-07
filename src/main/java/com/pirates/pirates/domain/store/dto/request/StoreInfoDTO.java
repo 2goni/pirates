@@ -1,11 +1,11 @@
-package com.pirates.pirates.domain.store.dto;
+package com.pirates.pirates.domain.store.dto.request;
 
 import lombok.Data;
 
 import java.util.List;
 
 @Data
-public class StoreInfoDto {
+public class StoreInfoDTO {
 
     private String name;
     private String owner;
@@ -13,6 +13,6 @@ public class StoreInfoDto {
     private Integer level;
     private String address;
     private String phone;
-    private List<BusinessTimesDto> businessTimes;
+    private List<BusinessTimesDTO> businessTimes;
 
 }
